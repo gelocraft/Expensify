@@ -45,14 +45,16 @@ describe('AddUnreportedExpense', () => {
             const sections = createUnreportedExpenseSections(transactions);
 
             // Should create one section
-            expect(sections).toHaveLength(1);
-            expect(sections.at(0)?.shouldShow).toBe(true);
-            expect(sections.at(0)?.data).toHaveLength(2);
+            const firstSection = sections.at(0);
+            expect(firstSection?.shouldShow).toBe(true);
 
-            const processedNormalTransaction = sections.at(0)?.data.find((t) => t.transactionID === '123');
+            const data = firstSection?.data ?? [];
+            expect(data).toHaveLength(2);
+
+            const processedNormalTransaction = data.find((t) => t.transactionID === '123');
             expect(processedNormalTransaction?.isDisabled).toBe(false);
 
-            const processedDeletedTransaction = sections.at(0)?.data.find((t) => t.transactionID === '456');
+            const processedDeletedTransaction = data.find((t) => t.transactionID === '456');
             expect(processedDeletedTransaction?.isDisabled).toBe(true);
         });
 
@@ -81,8 +83,11 @@ describe('AddUnreportedExpense', () => {
             const transactions = [normalTransaction, updateTransaction, addTransaction];
             const sections = createUnreportedExpenseSections(transactions);
 
-            expect(sections.at(0)?.data).toHaveLength(3);
-            for (const transaction of sections.at(0)?.data) {
+            const firstSection = sections.at(0);
+            const data = firstSection?.data ?? [];
+
+            expect(data).toHaveLength(3);
+            for (const transaction of data) {
                 expect(transaction.isDisabled).toBe(false);
             }
         });
@@ -105,8 +110,11 @@ describe('AddUnreportedExpense', () => {
             const transactions = [deletedTransaction1, deletedTransaction2];
             const sections = createUnreportedExpenseSections(transactions);
 
-            expect(sections.at(0)?.data).toHaveLength(2);
-            for (const transaction of sections.at(0)?.data) {
+            const firstSection = sections.at(0);
+            const data = firstSection?.data ?? [];
+
+            expect(data).toHaveLength(2);
+            for (const transaction of data) {
                 expect(transaction.isDisabled).toBe(true);
                 expect(transaction.pendingAction).toBe(CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE);
             }
