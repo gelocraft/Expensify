@@ -28,21 +28,21 @@ export default function () {
                 }
 
                 const newReportActionsDrafts: Record<ReportActionsDraftsKey, OnyxInputValue<ReportActionsDrafts>> = {};
-                Object.entries(allReportActionsDrafts).forEach(([onyxKey, reportActionDraft]) => {
+                for (const [onyxKey, reportActionDraft] of Object.entries(allReportActionsDrafts)) {
                     if (typeof reportActionDraft !== 'string') {
-                        return;
+                        continue;
                     }
                     newReportActionsDrafts[onyxKey as ReportActionsDraftsKey] = null;
 
                     if (isEmptyObject(reportActionDraft)) {
-                        return;
+                        continue;
                     }
 
                     const reportActionID = onyxKey.split('_').pop();
                     const newOnyxKey = onyxKey.replace(`_${reportActionID}`, '') as ReportActionsDraftsKey;
 
                     if (!reportActionID) {
-                        return;
+                        continue;
                     }
 
                     // If newReportActionsDrafts[newOnyxKey] isn't set, fall back on the migrated draft if there is one
@@ -52,7 +52,7 @@ export default function () {
                         ...currentActionsDrafts,
                         [reportActionID]: reportActionDraft,
                     };
-                });
+                }
 
                 if (isEmptyObject(newReportActionsDrafts)) {
                     Log.info('[Migrate Onyx] Skipped migration KeyReportActionsDraftByReportActionID because there are no actions drafts to migrate');

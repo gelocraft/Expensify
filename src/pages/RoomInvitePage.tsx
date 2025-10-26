@@ -73,10 +73,10 @@ function RoomInvitePage({
         const visibleParticipantAccountIDs = Object.entries(report.participants ?? {})
             .filter(([, participant]) => participant && !isHiddenForCurrentUser(participant.notificationPreference))
             .map(([accountID]) => Number(accountID));
-        getLoginsByAccountIDs(visibleParticipantAccountIDs).forEach((participant) => {
+        for (const participant of getLoginsByAccountIDs(visibleParticipantAccountIDs)) {
             const smsDomain = addSMSDomainIfPhoneNumber(participant);
             res[smsDomain] = true;
-        });
+        }
 
         return res;
     }, [report.participants]);
@@ -89,16 +89,16 @@ function RoomInvitePage({
         const inviteOptions = getMemberInviteOptions(options.personalDetails, betas ?? [], excludedUsers);
         // Update selectedOptions with the latest personalDetails information
         const detailsMap: Record<string, MemberForList> = {};
-        inviteOptions.personalDetails.forEach((detail) => {
+        for (const detail of inviteOptions.personalDetails) {
             if (!detail.login) {
-                return;
+                continue;
             }
             detailsMap[detail.login] = formatMemberForList(detail);
-        });
+        }
         const newSelectedOptions: OptionData[] = [];
-        selectedOptions.forEach((option) => {
+        for (const option of selectedOptions) {
             newSelectedOptions.push(option.login && option.login in detailsMap ? {...detailsMap[option.login], isSelected: true} : option);
-        });
+        }
 
         return {
             userToInvite: inviteOptions.userToInvite,
@@ -146,10 +146,10 @@ function RoomInvitePage({
         });
 
         // Filtering out selected users from the search results
-        const selectedLogins = selectedOptions.map(({login}) => login);
-        const personalDetailsWithoutSelected = personalDetails ? personalDetails.filter(({login}) => !selectedLogins.includes(login)) : [];
+        const selectedLogins = new Set(selectedOptions.map(({login}) => login));
+        const personalDetailsWithoutSelected = personalDetails ? personalDetails.filter(({login}) => !selectedLogins.has(login)) : [];
         const personalDetailsFormatted = personalDetailsWithoutSelected.map((personalDetail) => formatMemberForList(personalDetail));
-        const hasUnselectedUserToInvite = userToInvite && !selectedLogins.includes(userToInvite.login);
+        const hasUnselectedUserToInvite = userToInvite && !selectedLogins.has(userToInvite.login);
 
         sectionsArr.push({
             title: translate('common.contacts'),
@@ -198,14 +198,14 @@ function RoomInvitePage({
             return;
         }
         const invitedEmailsToAccountIDs: MemberEmailsToAccountIDs = {};
-        selectedOptions.forEach((option) => {
+        for (const option of selectedOptions) {
             const login = option.login ?? '';
             const accountID = option.accountID;
             if (!login.toLowerCase().trim() || !accountID) {
-                return;
+                continue;
             }
             invitedEmailsToAccountIDs[login] = Number(accountID);
-        });
+        }
         if (reportID) {
             inviteToRoom(reportID, invitedEmailsToAccountIDs, formatPhoneNumber);
         }

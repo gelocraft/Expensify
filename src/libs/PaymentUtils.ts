@@ -88,10 +88,10 @@ function getPaymentMethodDescription(accountType: AccountType, account: BankAcco
 function formatPaymentMethods(bankAccountList: Record<string, BankAccount>, fundList: Record<string, Fund> | Fund[], styles: ThemeStyles): PaymentMethod[] {
     const combinedPaymentMethods: PaymentMethod[] = [];
 
-    Object.values(bankAccountList).forEach((bankAccount) => {
+    for (const bankAccount of Object.values(bankAccountList)) {
         // Add all bank accounts besides the wallet
         if (bankAccount?.accountData?.type === CONST.BANK_ACCOUNT_TYPES.WALLET) {
-            return;
+            continue;
         }
 
         const {icon, iconSize, iconHeight, iconWidth, iconStyles} = getBankIcon({
@@ -108,9 +108,9 @@ function formatPaymentMethods(bankAccountList: Record<string, BankAccount>, fund
             iconWidth,
             iconStyles,
         });
-    });
+    }
 
-    Object.values(fundList).forEach((card) => {
+    for (const card of Object.values(fundList)) {
         const {icon, iconSize, iconHeight, iconWidth, iconStyles} = getBankIcon({bankName: card?.accountData?.bank, isCard: true, styles});
         combinedPaymentMethods.push({
             ...card,
@@ -121,7 +121,7 @@ function formatPaymentMethods(bankAccountList: Record<string, BankAccount>, fund
             iconWidth,
             iconStyles,
         });
-    });
+    }
 
     return combinedPaymentMethods;
 }

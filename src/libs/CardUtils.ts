@@ -100,22 +100,22 @@ function isCardClosed(card: Card) {
 
 function mergeCardListWithWorkspaceFeeds(workspaceFeeds: Record<string, WorkspaceCardsList | undefined>, cardList: CardList | undefined, shouldExcludeCardHiddenFromSearch = false) {
     const feedCards: CardList = {};
-    Object.values(cardList ?? {}).forEach((card) => {
+    for (const card of Object.values(cardList ?? {})) {
         if (!isCard(card) || (shouldExcludeCardHiddenFromSearch && isCardHiddenFromSearch(card))) {
-            return;
+            continue;
         }
 
         feedCards[card.cardID] = card;
-    });
+    }
 
-    Object.values(workspaceFeeds ?? {}).forEach((currentCardFeed) => {
-        Object.values(currentCardFeed ?? {}).forEach((card) => {
+    for (const currentCardFeed of Object.values(workspaceFeeds ?? {})) {
+        for (const card of Object.values(currentCardFeed ?? {})) {
             if (!isCard(card) || (shouldExcludeCardHiddenFromSearch && isCardHiddenFromSearch(card))) {
-                return;
+                continue;
             }
             feedCards[card.cardID] = card;
-        });
-    });
+        }
+    }
     return feedCards;
 }
 
@@ -529,29 +529,29 @@ function isSelectedFeedExpired(directFeed: DirectCardFeedData | undefined): bool
 /** Returns list of cards which can be assigned */
 function getFilteredCardList(list: WorkspaceCardsList | undefined, directFeed: DirectCardFeedData | undefined, workspaceCardFeeds: OnyxCollection<WorkspaceCardsList>) {
     const {cardList: customFeedCardsToAssign, ...cards} = list ?? {};
-    const assignedCards = Object.values(cards).map((card) => card.cardName);
+    const assignedCards = new Set(Object.values(cards).map((card) => card.cardName));
 
     // Get cards assigned across all workspaces
     const allWorkspaceAssignedCards = new Set<string>();
-    Object.values(workspaceCardFeeds ?? {}).forEach((workspaceCards) => {
+    for (const workspaceCards of Object.values(workspaceCardFeeds ?? {})) {
         if (!workspaceCards) {
-            return;
+            continue;
         }
         const {cardList, ...workspaceCardItems} = workspaceCards;
-        Object.values(workspaceCardItems).forEach((card) => {
+        for (const card of Object.values(workspaceCardItems)) {
             if (!card?.cardName) {
-                return;
+                continue;
             }
             allWorkspaceAssignedCards.add(card.cardName);
-        });
-    });
+        }
+    }
 
     if (directFeed) {
-        const unassignedDirectFeedCards = directFeed.accountList.filter((cardNumber) => !assignedCards.includes(cardNumber) && !allWorkspaceAssignedCards.has(cardNumber));
+        const unassignedDirectFeedCards = directFeed.accountList.filter((cardNumber) => !assignedCards.has(cardNumber) && !allWorkspaceAssignedCards.has(cardNumber));
         return Object.fromEntries(unassignedDirectFeedCards.map((cardNumber) => [cardNumber, cardNumber]));
     }
 
-    return Object.fromEntries(Object.entries(customFeedCardsToAssign ?? {}).filter(([cardNumber]) => !assignedCards.includes(cardNumber) && !allWorkspaceAssignedCards.has(cardNumber)));
+    return Object.fromEntries(Object.entries(customFeedCardsToAssign ?? {}).filter(([cardNumber]) => !assignedCards.has(cardNumber) && !allWorkspaceAssignedCards.has(cardNumber)));
 }
 
 function hasOnlyOneCardToAssign(list: FilteredCardList) {

@@ -240,9 +240,9 @@ function getReportsToDisplayInLHN(
     const allReportsDictValues = reports ?? {};
     const reportsToDisplay: ReportsToDisplayInLHN = {};
 
-    Object.entries(allReportsDictValues).forEach(([reportID, report]) => {
+    for (const [reportID, report] of Object.entries(allReportsDictValues)) {
         if (!report?.reportID) {
-            return;
+            continue;
         }
 
         const reportDraftComment = draftComments?.[`${ONYXKEYS.COLLECTION.REPORT_DRAFT_COMMENT}${report.reportID}`];
@@ -262,7 +262,7 @@ function getReportsToDisplayInLHN(
         if (shouldDisplay) {
             reportsToDisplay[reportID] = hasErrorsOtherThanFailedReceipt ? {...report, hasErrorsOtherThanFailedReceipt: true} : report;
         }
-    });
+    }
 
     return reportsToDisplay;
 }
@@ -293,10 +293,10 @@ function updateReportsToDisplayInLHN({
     draftComments,
 }: UpdateReportsToDisplayInLHNProps) {
     const displayedReportsCopy = {...displayedReports};
-    updatedReportsKeys.forEach((reportID) => {
+    for (const reportID of updatedReportsKeys) {
         const report = reports?.[reportID];
         if (!report?.reportID) {
-            return;
+            continue;
         }
 
         // Get the specific draft comment for this report instead of using a single draft comment for all reports
@@ -320,7 +320,7 @@ function updateReportsToDisplayInLHN({
         } else {
             delete displayedReportsCopy[reportID];
         }
-    });
+    }
 
     return displayedReportsCopy;
 }

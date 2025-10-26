@@ -194,12 +194,12 @@ function WorkspaceMembersPage({personalDetails, route, policy}: WorkspaceMembers
      */
     const validateSelection = useCallback(() => {
         const newErrors: Errors = {};
-        selectedEmployees.forEach((member) => {
+        for (const member of selectedEmployees) {
             if (member !== policy?.ownerAccountID && member !== session?.accountID) {
-                return;
+                continue;
             }
             newErrors[member] = translate('workspace.people.error.cannotRemove');
-        });
+        }
         setErrors(newErrors);
     }, [selectedEmployees, policy?.ownerAccountID, session?.accountID, translate]);
 
@@ -272,25 +272,25 @@ function WorkspaceMembersPage({personalDetails, route, policy}: WorkspaceMembers
 
         if (hasApprovers) {
             const ownerEmail = ownerDetails.login;
-            accountIDsToRemove.forEach((accountID) => {
+            for (const accountID of accountIDsToRemove) {
                 const removedApprover = personalDetails?.[accountID];
                 if (!removedApprover?.login || !ownerEmail) {
-                    return;
+                    continue;
                 }
                 const updatedWorkflows = updateWorkflowDataOnApproverRemoval({
                     approvalWorkflows,
                     removedApprover,
                     ownerDetails,
                 });
-                updatedWorkflows.forEach((workflow) => {
+                for (const workflow of updatedWorkflows) {
                     if (workflow?.removeApprovalWorkflow) {
                         const {removeApprovalWorkflow, ...updatedWorkflow} = workflow;
                         removeApprovalWorkflowAction(updatedWorkflow, policy);
                     } else {
                         updateApprovalWorkflow(workflow, [], [], policy);
                     }
-                });
-            });
+                }
+            }
         }
 
         setRemoveMembersConfirmModalVisible(false);
@@ -408,17 +408,17 @@ function WorkspaceMembersPage({personalDetails, route, policy}: WorkspaceMembers
     const data: MemberOption[] = useMemo(() => {
         const result: MemberOption[] = [];
 
-        Object.entries(policy?.employeeList ?? {}).forEach(([email, policyEmployee]) => {
+        for (const [email, policyEmployee] of Object.entries(policy?.employeeList ?? {})) {
             const accountID = Number(policyMemberEmailsToAccountIDs[email] ?? '');
             if (isDeletedPolicyEmployee(policyEmployee, isOffline)) {
-                return;
+                continue;
             }
 
             const details = personalDetails?.[accountID];
 
             if (!details) {
                 Log.hmmm(`[WorkspaceMembersPage] no personal details found for policy member with accountID: ${accountID}`);
-                return;
+                continue;
             }
 
             // If this policy is owned by Expensify then show all support (expensify.com or team.expensify.com) emails
@@ -426,7 +426,7 @@ function WorkspaceMembersPage({personalDetails, route, policy}: WorkspaceMembers
             // see random people added to their policy, but guides having access to the policies help set them up.
             if (isExpensifyTeam(details?.login ?? details?.displayName)) {
                 if (policyOwner && currentUserLogin && !isExpensifyTeam(policyOwner) && !isExpensifyTeam(currentUserLogin)) {
-                    return;
+                    continue;
                 }
             }
 
@@ -461,7 +461,7 @@ function WorkspaceMembersPage({personalDetails, route, policy}: WorkspaceMembers
                 // Note which secondary login was used to invite this primary login
                 invitedSecondaryLogin: details?.login ? (invitedPrimaryToSecondaryLogins[details.login] ?? '') : '',
             });
-        });
+        }
         return result;
     }, [
         isOffline,

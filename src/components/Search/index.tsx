@@ -425,13 +425,13 @@ function Search({queryJSON, searchResults, onSearchListScroll, contentContainerS
         }
         const newTransactionList: SelectedTransactions = {};
         if (validGroupBy || type === CONST.SEARCH.DATA_TYPES.EXPENSE_REPORT) {
-            data.forEach((transactionGroup) => {
+            for (const transactionGroup of data) {
                 if (!Object.hasOwn(transactionGroup, 'transactions') || !('transactions' in transactionGroup)) {
-                    return;
+                    continue;
                 }
-                transactionGroup.transactions.forEach((transactionItem) => {
+                for (const transactionItem of transactionGroup.transactions) {
                     if (!(transactionItem.transactionID in selectedTransactions) && !areAllMatchingItemsSelected) {
-                        return;
+                        continue;
                     }
 
                     newTransactionList[transactionItem.transactionID] = {
@@ -459,15 +459,15 @@ function Search({queryJSON, searchResults, onSearchListScroll, contentContainerS
                         convertedCurrency: transactionItem.convertedCurrency,
                         currency: transactionItem.currency,
                     };
-                });
-            });
+                }
+            }
         } else {
-            data.forEach((transactionItem) => {
+            for (const transactionItem of data) {
                 if (!Object.hasOwn(transactionItem, 'transactionID') || !('transactionID' in transactionItem)) {
-                    return;
+                    continue;
                 }
                 if (!(transactionItem.transactionID in selectedTransactions) && !areAllMatchingItemsSelected) {
-                    return;
+                    continue;
                 }
 
                 newTransactionList[transactionItem.transactionID] = {
@@ -495,7 +495,7 @@ function Search({queryJSON, searchResults, onSearchListScroll, contentContainerS
                     convertedCurrency: transactionItem.convertedCurrency,
                     currency: transactionItem.currency,
                 };
-            });
+            }
         }
         if (isEmptyObject(newTransactionList)) {
             return;
@@ -573,9 +573,9 @@ function Search({queryJSON, searchResults, onSearchListScroll, contentContainerS
             if (currentTransactions.some((transaction) => selectedTransactions[transaction.keyForList]?.isSelected)) {
                 const reducedSelectedTransactions: SelectedTransactions = {...selectedTransactions};
 
-                currentTransactions.forEach((transaction) => {
+                for (const transaction of currentTransactions) {
                     delete reducedSelectedTransactions[transaction.keyForList];
-                });
+                }
 
                 setSelectedTransactions(reducedSelectedTransactions, data);
                 return;

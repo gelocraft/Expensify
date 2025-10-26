@@ -91,15 +91,15 @@ function useDeleteTransactions({report, reportActions, policy}: UseDeleteTransac
                 },
             );
 
-            Object.keys(splitTransactionsByOriginalTransactionID).forEach((transactionID) => {
-                const splitIDs = (splitTransactionsByOriginalTransactionID[transactionID] ?? []).map((transaction) => transaction.transactionID);
+            for (const transactionID of Object.keys(splitTransactionsByOriginalTransactionID)) {
+                const splitIDs = new Set((splitTransactionsByOriginalTransactionID[transactionID] ?? []).map((transaction) => transaction.transactionID));
                 const childTransactions = getChildTransactions(allTransactions, allReports, transactionID).filter(
-                    (transaction) => !splitIDs.includes(transaction?.transactionID ?? String(CONST.DEFAULT_NUMBER_ID)),
+                    (transaction) => !splitIDs.has(transaction?.transactionID ?? String(CONST.DEFAULT_NUMBER_ID)),
                 );
 
                 if (childTransactions.length === 0) {
                     nonSplitTransactions.push(...splitTransactionsByOriginalTransactionID[transactionID]);
-                    return;
+                    continue;
                 }
                 const originalTransaction = allTransactions?.[`${ONYXKEYS.COLLECTION.TRANSACTION}${transactionID}`];
                 const originalTransactionIouActions = getIOUActionForTransactions([transactionID], report?.reportID);
@@ -131,11 +131,11 @@ function useDeleteTransactions({report, reportActions, policy}: UseDeleteTransac
                     isChatReportArchived: isChatIOUReportArchived,
                     isNewDotRevertSplitsEnabled: isBetaEnabled(CONST.BETAS.NEWDOT_REVERT_SPLITS),
                 });
-            });
+            }
 
-            nonSplitTransactions.forEach(({transactionID, action}) => {
+            for (const {transactionID, action} of nonSplitTransactions) {
                 if (!action) {
-                    return;
+                    continue;
                 }
                 const iouReportID = isMoneyRequestAction(action) ? getOriginalMessage(action)?.IOUReportID : undefined;
                 const iouReport = allReports?.[`${ONYXKEYS.COLLECTION.REPORT}${iouReportID}`];
@@ -158,7 +158,7 @@ function useDeleteTransactions({report, reportActions, policy}: UseDeleteTransac
                 if (action.childReportID) {
                     deletedTransactionThreadReportIDs.add(action.childReportID);
                 }
-            });
+            }
 
             return Array.from(deletedTransactionThreadReportIDs);
         },

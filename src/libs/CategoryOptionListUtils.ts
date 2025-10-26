@@ -36,10 +36,10 @@ type Hierarchy = Record<string, Category & {[key: string]: Hierarchy & Category}
  */
 function getCategoryOptionTree(options: Record<string, Category> | Category[], isOneLine = false, selectedOptions: Category[] = []): OptionTree[] {
     const optionCollection = new Map<string, OptionTree>();
-    Object.values(options).forEach((option) => {
+    for (const option of Object.values(options)) {
         if (isOneLine) {
             if (optionCollection.has(option.name)) {
-                return;
+                continue;
             }
 
             optionCollection.set(option.name, {
@@ -52,7 +52,7 @@ function getCategoryOptionTree(options: Record<string, Category> | Category[], i
                 pendingAction: option.pendingAction,
             });
 
-            return;
+            continue;
         }
 
         option.name.split(CONST.PARENT_CHILD_SEPARATOR).forEach((optionName, index, array) => {
@@ -76,7 +76,7 @@ function getCategoryOptionTree(options: Record<string, Category> | Category[], i
                 pendingAction: option.pendingAction,
             });
         });
-    });
+    }
 
     return Array.from(optionCollection.values());
 }
@@ -101,19 +101,19 @@ function getCategoryListSections({
 }): CategoryTreeSection[] {
     const sortedCategories = sortCategories(categories, localeCompare);
     const enabledCategories = Object.values(sortedCategories).filter((category) => category.enabled);
-    const enabledCategoriesNames = enabledCategories.map((category) => category.name);
+    const enabledCategoriesNames = new Set(enabledCategories.map((category) => category.name));
     const selectedOptionsWithDisabledState: Category[] = [];
     const categorySections: CategoryTreeSection[] = [];
     const numberOfEnabledCategories = enabledCategories.length;
 
-    selectedOptions.forEach((option) => {
-        if (enabledCategoriesNames.includes(option.name)) {
+    for (const option of selectedOptions) {
+        if (enabledCategoriesNames.has(option.name)) {
             const categoryObj = enabledCategories.find((category) => category.name === option.name);
             selectedOptionsWithDisabledState.push({...(categoryObj ?? option), isSelected: true, enabled: true});
-            return;
+            continue;
         }
         selectedOptionsWithDisabledState.push({...option, isSelected: true, enabled: false});
-    });
+    }
 
     if (numberOfEnabledCategories === 0 && selectedOptions.length > 0) {
         const data = getCategoryOptionTree(selectedOptionsWithDisabledState, true);
@@ -159,8 +159,8 @@ function getCategoryListSections({
         });
     }
 
-    const selectedOptionNames = selectedOptions.map((selectedOption) => selectedOption.name);
-    const filteredCategories = enabledCategories.filter((category) => !selectedOptionNames.includes(category.name));
+    const selectedOptionNames = new Set(selectedOptions.map((selectedOption) => selectedOption.name));
+    const filteredCategories = enabledCategories.filter((category) => !selectedOptionNames.has(category.name));
 
     if (numberOfEnabledCategories < CONST.STANDARD_LIST_ITEM_LIMIT) {
         const data = getCategoryOptionTree(filteredCategories, false, selectedOptionsWithDisabledState);
@@ -178,7 +178,7 @@ function getCategoryListSections({
     const filteredRecentlyUsedCategories = recentlyUsedCategories
         .filter(
             (categoryName) =>
-                !selectedOptionNames.includes(categoryName) && categories[categoryName]?.enabled && categories[categoryName]?.pendingAction !== CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE,
+                !selectedOptionNames.has(categoryName) && categories[categoryName]?.enabled && categories[categoryName]?.pendingAction !== CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE,
         )
         .map((categoryName) => ({
             name: categoryName,
@@ -238,7 +238,7 @@ function sortCategories(categories: Record<string, Category>, localeCompare: Loc
      *   }
      * }
      */
-    sortedCategories.forEach((category) => {
+    for (const category of sortedCategories) {
         const path = category.name.split(CONST.PARENT_CHILD_SEPARATOR);
         const existedValue = lodashGet(hierarchy, path, {}) as Hierarchy;
         lodashSet(hierarchy, path, {
@@ -246,7 +246,7 @@ function sortCategories(categories: Record<string, Category>, localeCompare: Loc
             name: category.name,
             pendingAction: category.pendingAction,
         });
-    });
+    }
 
     /**
      * A recursive function to convert hierarchy into an array of category objects.

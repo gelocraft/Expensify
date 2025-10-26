@@ -113,19 +113,19 @@ function WorkspaceInvitePage({route, policy}: WorkspaceInvitePageProps) {
 
         // Update selectedOptions with the latest personalDetails and policyEmployeeList information
         const detailsMap: Record<string, MemberForList> = {};
-        inviteOptions.personalDetails.forEach((detail) => {
+        for (const detail of inviteOptions.personalDetails) {
             if (!detail.login) {
-                return;
+                continue;
             }
 
             detailsMap[detail.login] = formatMemberForList(detail);
-        });
+        }
 
         const newSelectedOptions: MemberForList[] = [];
         if (firstRenderRef.current) {
             // We only want to add the saved selected user on first render
             firstRenderRef.current = false;
-            Object.entries(invitedEmailsToAccountIDsDraft ?? {}).forEach(([login, accountID]) => {
+            for (const [login, accountID] of Object.entries(invitedEmailsToAccountIDsDraft ?? {})) {
                 if (login in detailsMap) {
                     newSelectedOptions.push({...detailsMap[login], isSelected: true});
                 } else {
@@ -142,11 +142,11 @@ function WorkspaceInvitePage({route, policy}: WorkspaceInvitePageProps) {
                         newSelectedOptions.push(memberOption);
                     }
                 }
-            });
+            }
         }
-        selectedOptions.forEach((option) => {
+        for (const option of selectedOptions) {
             newSelectedOptions.push(option.login && option.login in detailsMap ? {...detailsMap[option.login], isSelected: true} : option);
-        });
+        }
 
         const userToInvite = inviteOptions.userToInvite;
 
@@ -156,20 +156,20 @@ function WorkspaceInvitePage({route, policy}: WorkspaceInvitePageProps) {
         }
 
         // Add all personal details to the new dict
-        inviteOptions.personalDetails.forEach((details) => {
+        for (const details of inviteOptions.personalDetails) {
             if (typeof details.accountID !== 'number') {
-                return;
+                continue;
             }
             newPersonalDetailsDict[details.accountID] = details;
-        });
+        }
 
         // Add all selected options to the new dict
-        newSelectedOptions.forEach((option) => {
+        for (const option of newSelectedOptions) {
             if (typeof option.accountID !== 'number') {
-                return;
+                continue;
             }
             newSelectedOptionsDict[option.accountID] = option;
-        });
+        }
 
         // Strip out dictionary keys and update arrays
         setUsersToInvite(Object.values(newUsersToInviteDict));
@@ -217,7 +217,7 @@ function WorkspaceInvitePage({route, policy}: WorkspaceInvitePageProps) {
             shouldShow: !isEmptyObject(personalDetailsFormatted),
         });
 
-        Object.values(usersToInvite).forEach((userToInvite) => {
+        for (const userToInvite of Object.values(usersToInvite)) {
             const hasUnselectedUserToInvite = !selectedLogins.some((selectedLogin) => selectedLogin === userToInvite.login);
 
             if (hasUnselectedUserToInvite) {
@@ -227,7 +227,7 @@ function WorkspaceInvitePage({route, policy}: WorkspaceInvitePageProps) {
                     shouldShow: true,
                 });
             }
-        });
+        }
 
         return sectionsArr;
     }, [areOptionsInitialized, selectedOptions, debouncedSearchTerm, personalDetails, translate, usersToInvite, countryCode]);
@@ -262,14 +262,14 @@ function WorkspaceInvitePage({route, policy}: WorkspaceInvitePageProps) {
         HttpUtils.cancelPendingRequests(READ_COMMANDS.SEARCH_FOR_REPORTS);
 
         const invitedEmailsToAccountIDs: InvitedEmailsToAccountIDs = {};
-        selectedOptions.forEach((option) => {
+        for (const option of selectedOptions) {
             const login = option.login ?? '';
             const accountID = option.accountID ?? CONST.DEFAULT_NUMBER_ID;
             if (!login.toLowerCase().trim() || !accountID) {
-                return;
+                continue;
             }
             invitedEmailsToAccountIDs[login] = Number(accountID);
-        });
+        }
         setWorkspaceInviteMembersDraft(route.params.policyID, invitedEmailsToAccountIDs);
         Navigation.navigate(ROUTES.WORKSPACE_INVITE_MESSAGE.getRoute(route.params.policyID, Navigation.getActiveRoute()));
     }, [route.params.policyID, selectedOptions]);

@@ -126,10 +126,10 @@ function ReportActionItemParentAction({
                     return {};
                 }
                 const ancestorReportNameValuePairs: OnyxCollection<OnyxTypes.ReportNameValuePairs> = {};
-                ancestors.forEach((ancestor) => {
+                for (const ancestor of ancestors) {
                     ancestorReportNameValuePairs[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${ancestor.report.reportID}`] =
                         allReportNameValuePairs[`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${ancestor.report.reportID}`];
-                });
+                }
                 return ancestorReportNameValuePairs;
             },
         },

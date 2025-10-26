@@ -1083,14 +1083,14 @@ Onyx.connect({
         }
         allReportMetadata = value;
 
-        Object.entries(value).forEach(([reportID, reportMetadata]) => {
+        for (const [reportID, reportMetadata] of Object.entries(value)) {
             if (!reportMetadata) {
-                return;
+                continue;
             }
 
             const [, id] = reportID.split('_');
             allReportMetadataKeyValue[id] = reportMetadata;
-        });
+        }
     },
 });
 
@@ -1952,10 +1952,10 @@ function pushTransactionViolationsOnyxData(
     const optimisticPolicy = {...allPolicies?.[`${ONYXKEYS.COLLECTION.POLICY}${policyID}`], ...policyUpdate} as Policy;
     const hasDependentTags = hasDependentTagsPolicyUtils(optimisticPolicy, policyTagLists);
 
-    getAllPolicyReports(policyID).forEach((report) => {
+    for (const report of getAllPolicyReports(policyID)) {
         const isReportAnInvoice = isInvoiceReport(report);
         if (!report?.reportID || isReportAnInvoice) {
-            return;
+            continue;
         }
 
         getReportTransactions(report.reportID).forEach((transaction: Transaction) => {
@@ -1980,7 +1980,7 @@ function pushTransactionViolationsOnyxData(
                 });
             }
         });
-    });
+    }
     return onyxData;
 }
 
@@ -5296,12 +5296,12 @@ function parseReportActionHtmlToText(reportAction: OnyxEntry<ReportAction>, repo
     const accountIDToName: Record<string, string> = {};
     const accountIDs = Array.from(html.matchAll(mentionUserRegex), (mention) => Number(mention[1]));
     const logins = getLoginsByAccountIDs(accountIDs);
-    accountIDs.forEach((id, index) => {
+    for (const [index, id] of accountIDs.entries()) {
         const login = logins.at(index);
         const user = allPersonalDetails?.[id];
         const displayName = formatPhoneNumber(login ?? '') || getDisplayNameOrDefault(user);
         accountIDToName[id] = getShortMentionIfFound(displayName, id.toString(), currentUserPersonalDetails, login) ?? '';
-    });
+    }
 
     const textMessage = Str.removeSMSDomain(Parser.htmlToText(html, {reportIDToName, accountIDToName}));
     parsedReportActionMessageCache[key] = textMessage;
@@ -6835,9 +6835,9 @@ function buildOptimisticIOUReportAction(params: BuildOptimisticIOUReportActionPa
         // In pay someone flow, we store amount, comment, currency in IOUDetails when type = pay
         if (isSendMoneyFlow) {
             const keys = ['amount', 'comment', 'currency'] as const;
-            keys.forEach((key) => {
+            for (const key of keys) {
                 delete originalMessage[key];
-            });
+            }
             originalMessage.IOUDetails = {amount, comment, currency};
             originalMessage.paymentType = paymentType;
         } else {
@@ -9119,13 +9119,13 @@ function getRouteFromLink(url: string | null): string {
     // Get the reportID from URL
     let route = url;
     const localWebAndroidRegEx = /^(https:\/\/([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3}))/;
-    linkingConfig.prefixes.forEach((prefix) => {
+    for (const prefix of linkingConfig.prefixes) {
         if (route.startsWith(prefix)) {
             route = route.replace(prefix, '');
         } else if (localWebAndroidRegEx.test(route)) {
             route = route.replace(localWebAndroidRegEx, '');
         } else {
-            return;
+            continue;
         }
 
         // Remove the port if it's a localhost URL
@@ -9137,7 +9137,7 @@ function getRouteFromLink(url: string | null): string {
         if (route.startsWith('/')) {
             route = route.replace('/', '');
         }
-    });
+    }
     return route;
 }
 
@@ -11656,13 +11656,13 @@ function getApprovalChain(policy: OnyxEntry<Policy>, expenseReport: OnyxEntry<Re
     const ruleApprovers = getRuleApprovers(policy, expenseReport);
 
     // Push rule approvers to approvalChain list before submitsTo/forwardsTo approvers
-    ruleApprovers.forEach((ruleApprover) => {
+    for (const ruleApprover of ruleApprovers) {
         // Don't push submitter to approve as a rule approver
         if (fullApprovalChain.includes(ruleApprover) || ruleApprover === submitterEmail) {
-            return;
+            continue;
         }
         fullApprovalChain.push(ruleApprover);
-    });
+    }
 
     let nextApproverEmail = getManagerAccountEmail(policy, expenseReport);
 
@@ -11671,13 +11671,13 @@ function getApprovalChain(policy: OnyxEntry<Policy>, expenseReport: OnyxEntry<Re
         nextApproverEmail = getForwardsToAccount(policy, nextApproverEmail, reportTotal);
     }
 
-    approvalChain.forEach((approver) => {
+    for (const approver of approvalChain) {
         if (fullApprovalChain.includes(approver)) {
-            return;
+            continue;
         }
 
         fullApprovalChain.push(approver);
-    });
+    }
 
     if (fullApprovalChain.at(-1) === submitterEmail && policy?.preventSelfApproval) {
         fullApprovalChain.pop();

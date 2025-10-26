@@ -271,16 +271,16 @@ function IOURequestStepConfirmation({
 
     const defaultBillable = !!policy?.defaultBillable;
     useEffect(() => {
-        transactionIDs.forEach((transactionID) => {
+        for (const transactionID of transactionIDs) {
             setMoneyRequestBillable(transactionID, defaultBillable);
-        });
+        }
     }, [transactionIDs, defaultBillable]);
 
     useEffect(() => {
         const defaultReimbursable = isPolicyExpenseChat && isPaidGroupPolicy(policy) ? (policy?.defaultReimbursable ?? true) : true;
-        transactionIDs.forEach((transactionID) => {
+        for (const transactionID of transactionIDs) {
             setMoneyRequestReimbursable(transactionID, defaultReimbursable);
-        });
+        }
     }, [transactionIDs, policy, isPolicyExpenseChat]);
 
     useEffect(() => {
@@ -313,14 +313,14 @@ function IOURequestStepConfirmation({
     }, [isLoadingTransaction, isMovingTransactionFromTrackExpense]);
 
     useEffect(() => {
-        transactions.forEach((item) => {
+        for (const item of transactions) {
             if (!item.category) {
-                return;
+                continue;
             }
             if (policyCategories?.[item.category] && !policyCategories[item.category].enabled) {
                 setMoneyRequestCategory(item.transactionID, '', policy?.id);
             }
-        });
+        }
         // We don't want to clear out category every time the transactions change
         // eslint-disable-next-line react-compiler/react-compiler, react-hooks/exhaustive-deps
     }, [policy?.id, policyCategories, transactionsCategories]);
@@ -329,12 +329,12 @@ function IOURequestStepConfirmation({
     const defaultCategory = policyDistance?.defaultCategory ?? '';
 
     useEffect(() => {
-        transactions.forEach((item) => {
+        for (const item of transactions) {
             if (!isDistanceRequest || !!item?.category) {
-                return;
+                continue;
             }
             setMoneyRequestCategory(item.transactionID, defaultCategory, policy?.id);
-        });
+        }
         // Prevent resetting to default when unselect category
         // eslint-disable-next-line react-compiler/react-compiler, react-hooks/exhaustive-deps
     }, [transactionIDs, requestType, defaultCategory, policy?.id]);
@@ -477,7 +477,7 @@ function IOURequestStepConfirmation({
             const optimisticIOUReportID = generateReportID();
             const optimisticReportPreviewActionID = rand64();
 
-            transactions.forEach((item, index) => {
+            for (const [index, item] of transactions.entries()) {
                 const receipt = receiptFiles[item.transactionID];
                 const isTestReceipt = receipt?.isTestReceipt ?? false;
                 const isTestDriveReceipt = receipt?.isTestDriveReceipt ?? false;
@@ -535,7 +535,7 @@ function IOURequestStepConfirmation({
                     shouldGenerateTransactionThreadReport,
                     backToReport,
                 });
-            });
+            }
         },
         [
             transactions,
@@ -611,7 +611,7 @@ function IOURequestStepConfirmation({
             if (!participant) {
                 return;
             }
-            transactions.forEach((item, index) => {
+            for (const [index, item] of transactions.entries()) {
                 const isLinkedTrackedExpenseReportArchived =
                     !!item.linkedTrackedExpenseReportID && archivedReportsIdSet.has(`${ONYXKEYS.COLLECTION.REPORT_NAME_VALUE_PAIRS}${item.linkedTrackedExpenseReportID}`);
 
@@ -657,7 +657,7 @@ function IOURequestStepConfirmation({
                     },
                     shouldHandleNavigation: index === transactions.length - 1,
                 });
-            });
+            }
         },
         [
             report,
@@ -742,11 +742,13 @@ function IOURequestStepConfirmation({
 
             // Filter out participants with an amount equal to O
             if (iouType === CONST.IOU.TYPE.SPLIT && transaction?.splitShares) {
-                const participantsWithAmount = Object.keys(transaction.splitShares ?? {})
-                    .filter((accountID: string): boolean => (transaction?.splitShares?.[Number(accountID)]?.amount ?? 0) > 0)
-                    .map((accountID) => Number(accountID));
+                const participantsWithAmount = new Set(
+                    Object.keys(transaction.splitShares ?? {})
+                        .filter((accountID: string): boolean => (transaction?.splitShares?.[Number(accountID)]?.amount ?? 0) > 0)
+                        .map((accountID) => Number(accountID)),
+                );
                 splitParticipants = selectedParticipants.filter((participant) =>
-                    participantsWithAmount.includes(
+                    participantsWithAmount.has(
                         participant.isPolicyExpenseChat ? (participant?.ownerAccountID ?? CONST.DEFAULT_NUMBER_ID) : (participant.accountID ?? CONST.DEFAULT_NUMBER_ID),
                     ),
                 );
@@ -770,10 +772,10 @@ function IOURequestStepConfirmation({
             if (iouType === CONST.IOU.TYPE.SPLIT && Object.values(receiptFiles).filter((receipt) => !!receipt).length) {
                 const currentUserLogin = currentUserPersonalDetails.login;
                 if (currentUserLogin) {
-                    transactions.forEach((item, index) => {
+                    for (const [index, item] of transactions.entries()) {
                         const transactionReceiptFile = receiptFiles[item.transactionID];
                         if (!transactionReceiptFile) {
-                            return;
+                            continue;
                         }
                         const itemTrimmedComment = item?.comment?.comment?.trim() ?? '';
 
@@ -795,7 +797,7 @@ function IOURequestStepConfirmation({
                             shouldPlaySound: index === transactions.length - 1,
                             policyRecentlyUsedCategories,
                         });
-                    });
+                    }
                 }
                 return;
             }

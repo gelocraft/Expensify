@@ -463,12 +463,12 @@ function getFilterTaxRateDisplayTitle(filters: Partial<SearchAdvancedFiltersForm
     }
 
     const result: string[] = [];
-    Object.entries(taxRates).forEach(([taxRateName, taxRateKeys]) => {
+    for (const [taxRateName, taxRateKeys] of Object.entries(taxRates)) {
         if (!taxRateKeys.some((taxRateKey) => selectedTaxRateKeys.includes(taxRateKey)) || result.includes(taxRateName)) {
-            return;
+            continue;
         }
         result.push(taxRateName);
-    });
+    }
 
     return result.join(', ');
 }
@@ -601,7 +601,7 @@ function AdvancedSearchFilters() {
         },
     ];
 
-    sections.forEach((section) => {
+    for (const section of sections) {
         section.items.sort((a, b) => {
             if (a.key === CONST.SEARCH.SYNTAX_FILTER_KEYS.TYPE) {
                 return -1;
@@ -611,7 +611,7 @@ function AdvancedSearchFilters() {
             }
             return localeCompare(a.description, b.description);
         });
-    });
+    }
 
     return (
         <>

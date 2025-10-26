@@ -216,14 +216,14 @@ Onyx.connect({
             const policyReports = ReportUtils.getAllPolicyReports(policyID);
             const cleanUpMergeQueries: Record<`${typeof ONYXKEYS.COLLECTION.REPORT}${string}`, NullishDeep<Report>> = {};
             const cleanUpSetQueries: Record<`${typeof ONYXKEYS.COLLECTION.REPORT_DRAFT_COMMENT}${string}` | `${typeof ONYXKEYS.COLLECTION.REPORT_ACTIONS_DRAFTS}${string}`, null> = {};
-            policyReports.forEach((policyReport) => {
+            for (const policyReport of policyReports) {
                 if (!policyReport) {
-                    return;
+                    continue;
                 }
                 const {reportID} = policyReport;
                 cleanUpSetQueries[`${ONYXKEYS.COLLECTION.REPORT_DRAFT_COMMENT}${reportID}`] = null;
                 cleanUpSetQueries[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS_DRAFTS}${reportID}`] = null;
-            });
+            }
             Onyx.mergeCollection(ONYXKEYS.COLLECTION.REPORT, cleanUpMergeQueries);
             Onyx.multiSet(cleanUpSetQueries);
             delete allPolicies[key];
@@ -458,7 +458,7 @@ function deleteWorkspace(
 
     const finallyData: OnyxUpdate[] = [];
     const currentTime = DateUtils.getDBTime();
-    reportsToArchive.forEach((report) => {
+    for (const report of reportsToArchive) {
         const {reportID, ownerAccountID, oldPolicyName} = report ?? {};
         const isInvoiceReceiverReport = report?.invoiceReceiver && 'policyID' in report.invoiceReceiver && report.invoiceReceiver.policyID === policyID;
         optimisticData.push({
@@ -544,7 +544,7 @@ function deleteWorkspace(
                 value: transactionViolation,
             });
         }
-    });
+    }
 
     Object.keys(lastUsedPaymentMethods ?? {})?.forEach((paymentMethodKey) => {
         const lastUsedPaymentMethod = lastUsedPaymentMethods?.[paymentMethodKey];
@@ -764,13 +764,13 @@ function setWorkspaceApprovalMode(policyID: string, approver: string, approvalMo
     const updatedEmployeeList: Record<string, PolicyEmployee> = {};
 
     if (approvalMode === CONST.POLICY.APPROVAL_MODE.OPTIONAL) {
-        Object.keys(policy?.employeeList ?? {}).forEach((employee) => {
+        for (const employee of Object.keys(policy?.employeeList ?? {})) {
             updatedEmployeeList[employee] = {
                 ...policy?.employeeList?.[employee],
                 submitsTo: approver,
                 forwardsTo: '',
             };
-        });
+        }
     }
 
     const value = {
@@ -1060,12 +1060,12 @@ function leaveWorkspace(policyID?: string) {
 
     const pendingChatMembers = ReportUtils.getPendingChatMembers([sessionAccountID], [], CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE);
 
-    workspaceChats.forEach((report) => {
+    for (const report of workspaceChats) {
         const parentReport = ReportUtils.getRootParentReport({report});
         const reportToCheckOwner = isEmptyObject(parentReport) ? report : parentReport;
 
         if (ReportUtils.isPolicyExpenseChat(report) && !ReportUtils.isReportOwner(reportToCheckOwner)) {
-            return;
+            continue;
         }
 
         optimisticData.push(
@@ -1100,7 +1100,7 @@ function leaveWorkspace(policyID?: string) {
                 pendingChatMembers: null,
             },
         });
-    });
+    }
 
     const params: LeavePolicyParams = {
         policyID,
@@ -1258,7 +1258,7 @@ function createPolicyExpenseChats(
         reportCreationData: {},
     };
 
-    Object.keys(invitedEmailsToAccountIDs).forEach((email) => {
+    for (const email of Object.keys(invitedEmailsToAccountIDs)) {
         const accountID = invitedEmailsToAccountIDs[email];
         const cleanAccountID = Number(accountID);
         const login = PhoneNumber.addSMSDomainIfPhoneNumber(email);
@@ -1287,9 +1287,9 @@ function createPolicyExpenseChats(
             });
             const currentTime = DateUtils.getDBTime();
             const reportActions = allReportActions?.[`${ONYXKEYS.COLLECTION.REPORT_ACTIONS}${oldChat.reportID}`] ?? {};
-            Object.values(reportActions).forEach((action) => {
+            for (const action of Object.values(reportActions)) {
                 if (action.actionName !== CONST.REPORT.ACTIONS.TYPE.REPORT_PREVIEW) {
-                    return;
+                    continue;
                 }
                 workspaceMembersChats.onyxOptimisticData.push({
                     onyxMethod: Onyx.METHOD.MERGE,
@@ -1305,8 +1305,8 @@ function createPolicyExpenseChats(
                         private_isArchived: currentTime,
                     },
                 });
-            });
-            return;
+            }
+            continue;
         }
         const optimisticReport = ReportUtils.buildOptimisticChatReport({
             participantList: [sessionAccountID, cleanAccountID],
@@ -1410,7 +1410,7 @@ function createPolicyExpenseChats(
                 },
             },
         });
-    });
+    }
     return workspaceMembersChats;
 }
 
@@ -2365,29 +2365,27 @@ function buildPolicyData(options: BuildPolicyDataOptions = {}) {
     }
 
     if (getAdminPolicies().length === 0 && lastUsedPaymentMethod) {
-        Object.values(allReports ?? {})
-            .filter((iouReport) => iouReport?.type === CONST.REPORT.TYPE.IOU)
-            .forEach((iouReport) => {
-                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                if (lastUsedPaymentMethod?.iou?.name || !iouReport?.policyID) {
-                    return;
-                }
+        for (const iouReport of Object.values(allReports ?? {}).filter((iouReport) => iouReport?.type === CONST.REPORT.TYPE.IOU)) {
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            if (lastUsedPaymentMethod?.iou?.name || !iouReport?.policyID) {
+                continue;
+            }
 
-                successData.push({
-                    onyxMethod: Onyx.METHOD.MERGE,
-                    key: ONYXKEYS.NVP_LAST_PAYMENT_METHOD,
-                    value: {
-                        [iouReport?.policyID]: {
-                            iou: {
-                                name: policyID,
-                            },
-                            lastUsed: {
-                                name: policyID,
-                            },
+            successData.push({
+                onyxMethod: Onyx.METHOD.MERGE,
+                key: ONYXKEYS.NVP_LAST_PAYMENT_METHOD,
+                value: {
+                    [iouReport?.policyID]: {
+                        iou: {
+                            name: policyID,
+                        },
+                        lastUsed: {
+                            name: policyID,
                         },
                     },
-                });
+                },
             });
+        }
     }
 
     // We need to clone the file to prevent non-indexable errors.
@@ -3681,7 +3679,7 @@ function createWorkspaceFromIOUPayment(iouReport: OnyxEntry<Report>): WorkspaceF
     // For performance reasons, we are going to compose a merge collection data for transactions
     const transactionsOptimisticData: Record<string, Transaction> = {};
     const transactionFailureData: Record<string, Transaction> = {};
-    reportTransactions.forEach((transaction) => {
+    for (const transaction of reportTransactions) {
         transactionsOptimisticData[`${ONYXKEYS.COLLECTION.TRANSACTION}${transaction.transactionID}`] = {
             ...transaction,
             amount: -transaction.amount,
@@ -3689,7 +3687,7 @@ function createWorkspaceFromIOUPayment(iouReport: OnyxEntry<Report>): WorkspaceF
         };
 
         transactionFailureData[`${ONYXKEYS.COLLECTION.TRANSACTION}${transaction.transactionID}`] = transaction;
-    });
+    }
 
     optimisticData.push({
         onyxMethod: Onyx.METHOD.MERGE_COLLECTION,
@@ -6111,7 +6109,9 @@ function clearAllPolicies() {
     if (!allPolicies) {
         return;
     }
-    Object.keys(allPolicies).forEach((key) => delete allPolicies[key]);
+    for (const key of Object.keys(allPolicies)) {
+        delete allPolicies[key];
+    }
 }
 
 function updateInvoiceCompanyName(policyID: string, companyName: string) {

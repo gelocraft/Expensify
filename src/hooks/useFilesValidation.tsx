@@ -184,9 +184,9 @@ function useFilesValidation(proceedWithFilesAction: (files: FileObject[], dataTr
         // Reset collected errors for new validation
         collectedErrors.current = [];
 
-        files.forEach((file, index) => {
+        for (const [index, file] of files.entries()) {
             originalFileOrder.current.set(file.uri ?? '', index);
-        });
+        }
 
         Promise.all(files.map((file, index) => isValidFile(file, items.at(index), files.length > 1).then((isValid) => (isValid ? file : null))))
             .then((validationResults) => {
@@ -199,16 +199,16 @@ function useFilesValidation(proceedWithFilesAction: (files: FileObject[], dataTr
                     setIsLoaderVisible(true);
 
                     return Promise.all(otherFiles.map((file) => convertHeicImageToJpegPromise(file))).then((convertedImages) => {
-                        convertedImages.forEach((convertedFile, index) => {
+                        for (const [index, convertedFile] of convertedImages.entries()) {
                             updateFileOrderMapping(otherFiles.at(index), convertedFile);
-                        });
+                        }
 
                         // Check if we need to resize images
                         if (convertedImages.some((file) => (file.size ?? 0) > CONST.API_ATTACHMENT_VALIDATIONS.RECEIPT_MAX_SIZE)) {
                             return Promise.all(convertedImages.map((file) => resizeImageIfNeeded(file))).then((processedFiles) => {
-                                processedFiles.forEach((resizedFile, index) => {
+                                for (const [index, resizedFile] of processedFiles.entries()) {
                                     updateFileOrderMapping(convertedImages.at(index), resizedFile);
-                                });
+                                }
                                 setIsLoaderVisible(false);
                                 return Promise.resolve({processedFiles, pdfsToLoad});
                             });
@@ -224,9 +224,9 @@ function useFilesValidation(proceedWithFilesAction: (files: FileObject[], dataTr
                 if (otherFiles.some((file) => (file.size ?? 0) > CONST.API_ATTACHMENT_VALIDATIONS.RECEIPT_MAX_SIZE)) {
                     setIsLoaderVisible(true);
                     return Promise.all(otherFiles.map((file) => resizeImageIfNeeded(file))).then((processedFiles) => {
-                        processedFiles.forEach((resizedFile, index) => {
+                        for (const [index, resizedFile] of processedFiles.entries()) {
                             updateFileOrderMapping(otherFiles.at(index), resizedFile);
-                        });
+                        }
                         setIsLoaderVisible(false);
                         return Promise.resolve({processedFiles, pdfsToLoad});
                     });
