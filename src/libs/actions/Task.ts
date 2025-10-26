@@ -289,12 +289,12 @@ function createTaskAndNavigate(params: CreateTaskAndNavigateParams) {
 
     // If needed, update optimistic data for parent report action of the parent report.
     const optimisticParentReportData = ReportUtils.getOptimisticDataForParentReportAction(parentReport, currentTime, CONST.RED_BRICK_ROAD_PENDING_ACTION.ADD);
-    optimisticParentReportData.forEach((parentReportData) => {
+    for (const parentReportData of optimisticParentReportData) {
         if (isEmptyObject(parentReportData)) {
-            return;
+            continue;
         }
         optimisticData.push(parentReportData);
-    });
+    }
 
     // FOR PARENT REPORT (SHARE DESTINATION)
     successData.push({
@@ -1137,12 +1137,12 @@ function deleteTask(report: OnyxEntry<OnyxTypes.Report>, isReportArchived: boole
             parentReport?.lastVisibleActionCreated ?? '',
             CONST.RED_BRICK_ROAD_PENDING_ACTION.DELETE,
         );
-        optimisticParentReportData.forEach((parentReportData) => {
+        for (const parentReportData of optimisticParentReportData) {
             if (isEmptyObject(parentReportData)) {
-                return;
+                continue;
             }
             optimisticData.push(parentReportData);
-        });
+        }
     }
 
     const successData: OnyxUpdate[] = [

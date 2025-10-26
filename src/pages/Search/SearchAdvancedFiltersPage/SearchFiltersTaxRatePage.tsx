@@ -20,14 +20,16 @@ function SearchFiltersTaxRatePage() {
     const [searchAdvancedFiltersForm] = useOnyx(ONYXKEYS.FORMS.SEARCH_ADVANCED_FILTERS_FORM, {canBeMissing: true});
     const allTaxRates = getAllTaxRates();
     const selectedTaxesItems: SearchMultipleSelectionPickerItem[] = [];
-    Object.entries(allTaxRates).forEach(([taxRateName, taxRateKeys]) => {
-        searchAdvancedFiltersForm?.taxRate?.forEach((taxRateKey) => {
-            if (!taxRateKeys.includes(taxRateKey) || selectedTaxesItems.some((item) => item.name === taxRateName)) {
-                return;
+    for (const [taxRateName, taxRateKeys] of Object.entries(allTaxRates)) {
+        if (searchAdvancedFiltersForm?.taxRate) {
+            for (const taxRateKey of searchAdvancedFiltersForm?.taxRate) {
+                if (!taxRateKeys.includes(taxRateKey) || selectedTaxesItems.some((item) => item.name === taxRateName)) {
+                    continue;
+                }
+                selectedTaxesItems.push({name: taxRateName, value: taxRateKeys});
             }
-            selectedTaxesItems.push({name: taxRateName, value: taxRateKeys});
-        });
-    });
+        }
+    }
     const policyIDs = searchAdvancedFiltersForm?.policyID ?? [];
     // eslint-disable-next-line rulesdir/no-inline-useOnyx-selector
     const [policies] = useOnyx(`${ONYXKEYS.COLLECTION.POLICY}`, {
@@ -45,15 +47,15 @@ function SearchFiltersTaxRatePage() {
                 if (!taxRates) {
                     return acc;
                 }
-                Object.entries(taxRates).forEach(([taxRateKey, taxRate]) => {
+                for (const [taxRateKey, taxRate] of Object.entries(taxRates)) {
                     if (!acc[taxRate.name]) {
                         acc[taxRate.name] = [];
                     }
                     if (acc[taxRate.name].includes(taxRateKey)) {
-                        return;
+                        continue;
                     }
                     acc[taxRate.name].push(taxRateKey);
-                });
+                }
                 return acc;
             },
             {} as Record<string, string[]>,

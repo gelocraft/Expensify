@@ -263,7 +263,7 @@ function SettlementButton({
         }
 
         if ((hasMultiplePolicies || hasSinglePolicy) && canUseWallet && !isPersonalOnlyOption) {
-            activeAdminPolicies.forEach((activePolicy) => {
+            for (const activePolicy of activeAdminPolicies) {
                 const policyName = activePolicy.name;
                 buttonOptions.push({
                     text: translate('iou.payWithPolicy', {policyName: truncate(policyName, {length: CONST.ADDITIONAL_ALLOWED_CHARACTERS}), formattedAmount: ''}),
@@ -271,7 +271,7 @@ function SettlementButton({
                     value: activePolicy.id,
                     shouldUpdateSelectedIndex: false,
                 });
-            });
+            }
         }
 
         if (shouldShowPayElsewhereOption) {

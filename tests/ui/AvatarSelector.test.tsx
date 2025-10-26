@@ -80,9 +80,9 @@ describe('AvatarSelector', () => {
 
             // Check that all custom avatars are rendered
             const avatars = Object.keys(ALL_CUSTOM_AVATARS);
-            avatars.forEach((id) => {
+            for (const id of avatars) {
                 expect(screen.getByTestId(`AvatarSelector_${id}`)).toBeOnTheScreen();
-            });
+            }
         });
 
         it('calls onSelect when custom avatar is pressed', async () => {

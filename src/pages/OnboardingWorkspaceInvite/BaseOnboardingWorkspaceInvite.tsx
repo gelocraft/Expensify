@@ -110,18 +110,18 @@ function BaseOnboardingWorkspaceInvite({shouldUseNativeStyles}: BaseOnboardingWo
 
         // Update selectedOptions with the latest personalDetails and policyEmployeeList information
         const detailsMap: Record<string, MemberForList> = {};
-        inviteOptions.personalDetails.forEach((detail) => {
+        for (const detail of inviteOptions.personalDetails) {
             if (!detail.login) {
-                return;
+                continue;
             }
 
             detailsMap[detail.login] = formatMemberForList(detail);
-        });
+        }
 
         const newSelectedOptions: MemberForList[] = [];
-        selectedOptions.forEach((option) => {
+        for (const option of selectedOptions) {
             newSelectedOptions.push(option.login && option.login in detailsMap ? {...detailsMap[option.login], isSelected: true} : option);
-        });
+        }
 
         const userToInvite = inviteOptions.userToInvite;
 
@@ -131,20 +131,20 @@ function BaseOnboardingWorkspaceInvite({shouldUseNativeStyles}: BaseOnboardingWo
         }
 
         // Add all personal details to the new dict
-        inviteOptions.personalDetails.forEach((details) => {
+        for (const details of inviteOptions.personalDetails) {
             if (typeof details.accountID !== 'number') {
-                return;
+                continue;
             }
             newPersonalDetailsDict[details.accountID] = details;
-        });
+        }
 
         // Add all selected options to the new dict
-        newSelectedOptions.forEach((option) => {
+        for (const option of newSelectedOptions) {
             if (typeof option.accountID !== 'number') {
-                return;
+                continue;
             }
             newSelectedOptionsDict[option.accountID] = option;
-        });
+        }
 
         // Strip out dictionary keys and update arrays
         setUsersToInvite(Object.values(newUsersToInviteDict));
@@ -193,7 +193,7 @@ function BaseOnboardingWorkspaceInvite({shouldUseNativeStyles}: BaseOnboardingWo
             shouldShow: !isEmptyObject(personalDetailsFormatted),
         });
 
-        Object.values(usersToInvite).forEach((userToInvite) => {
+        for (const userToInvite of Object.values(usersToInvite)) {
             const hasUnselectedUserToInvite = !selectedLoginsSet.has(userToInvite.login ?? '');
 
             if (hasUnselectedUserToInvite) {
@@ -203,7 +203,7 @@ function BaseOnboardingWorkspaceInvite({shouldUseNativeStyles}: BaseOnboardingWo
                     shouldShow: true,
                 });
             }
-        });
+        }
 
         return sectionsArr;
     }, [areOptionsInitialized, selectedOptions, debouncedSearchTerm, personalDetails, translate, usersToInvite, countryCode]);
@@ -271,14 +271,14 @@ function BaseOnboardingWorkspaceInvite({shouldUseNativeStyles}: BaseOnboardingWo
         HttpUtils.cancelPendingRequests(READ_COMMANDS.SEARCH_FOR_REPORTS);
 
         const invitedEmailsToAccountIDs: InvitedEmailsToAccountIDs = {};
-        selectedOptions.forEach((option) => {
+        for (const option of selectedOptions) {
             const login = option.login ?? '';
             const accountID = option.accountID ?? CONST.DEFAULT_NUMBER_ID;
             if (!login.toLowerCase().trim() || !accountID) {
-                return;
+                continue;
             }
             invitedEmailsToAccountIDs[login] = Number(accountID);
-        });
+        }
         const policyMemberAccountIDs = Object.values(getMemberAccountIDsForWorkspace(policy?.employeeList, false, false));
         addMembersToWorkspace(invitedEmailsToAccountIDs, `${welcomeNoteSubject}\n\n${welcomeNote}`, onboardingPolicyID, policyMemberAccountIDs, CONST.POLICY.ROLE.USER, formatPhoneNumber);
         completeOnboarding(true);

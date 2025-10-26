@@ -102,18 +102,18 @@ function runCompilerHealthcheck(src?: string): CompilerResults {
 
     // Use Map keyed by unique file key to deduplicate failures
     const failureMap = new Map<string, CompilerFailure>();
-    parsed.failures.forEach((failure) => {
+    for (const failure of parsed.failures) {
         const key = getUniqueFileKey(failure);
         // Prefer the first occurrence that has a reason
         const existing = failureMap.get(key);
         if (!existing) {
             failureMap.set(key, failure);
-            return;
+            continue;
         }
         if (!existing.reason && failure.reason) {
             failureMap.set(key, failure);
         }
-    });
+    }
 
     return {success: successSet, failures: failureMap};
 }
@@ -142,7 +142,9 @@ function parseCombinedOutput(output: string): CompilerResults {
             const jsonLines = lines.slice(jsonStart, jsonEnd + 1);
             const jsonStr = jsonLines.join('\n');
             const jsonResult = JSON.parse(jsonStr) as HealthcheckJsonResults;
-            jsonResult.success.forEach((success) => successSet.add(success));
+            for (const success of jsonResult.success) {
+                successSet.add(success);
+            }
         } catch (error) {
             warn('Failed to parse JSON from combined output:', error);
         }
@@ -272,22 +274,22 @@ function printFailureSummary({success, failures}: CompilerResults): void {
     const tab = '    ';
 
     const distinctFileNames = new Set<string>();
-    failures.forEach((failure) => {
+    for (const failure of failures) {
         distinctFileNames.add(failure.file);
-    });
+    }
 
     log();
     logError(`Failed to compile ${distinctFileNames.size} files with React Compiler:`);
     log();
 
     // Print unique failures for the files that were checked
-    failures.forEach((failure) => {
+    for (const failure of failures) {
         const location = failure.line && failure.column ? `:${failure.line}:${failure.column}` : '';
         bold(`${failure.file}${location}`);
         if (failure.reason) {
             note(`${tab}${failure.reason}`);
         }
-    });
+    }
 
     log();
     logError('The files above failed to compile with React Compiler, probably because of Rules of React violations. Please fix the issues and run the check again.');

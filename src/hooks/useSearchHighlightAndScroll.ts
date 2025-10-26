@@ -276,7 +276,7 @@ function useSearchHighlightAndScroll({
 function extractTransactionIDsFromSearchResults(searchResultsData: Partial<SearchResults['data']>): string[] {
     const transactionIDs: string[] = [];
 
-    Object.values(searchResultsData).forEach((item) => {
+    for (const item of Object.values(searchResultsData)) {
         // Check for transactionID directly on the item (TransactionListItemType)
         if ((item as TransactionListItemType)?.transactionID) {
             transactionIDs.push((item as TransactionListItemType).transactionID);
@@ -284,14 +284,14 @@ function extractTransactionIDsFromSearchResults(searchResultsData: Partial<Searc
 
         // Check for transactions array within the item (TransactionGroupListItemType)
         if (Array.isArray((item as TransactionGroupListItemType)?.transactions)) {
-            (item as TransactionGroupListItemType).transactions.forEach((transaction) => {
+            for (const transaction of (item as TransactionGroupListItemType).transactions) {
                 if (!transaction?.transactionID) {
-                    return;
+                    continue;
                 }
                 transactionIDs.push(transaction.transactionID);
-            });
+            }
         }
-    });
+    }
 
     return transactionIDs;
 }

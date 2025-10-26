@@ -294,7 +294,7 @@ function getForReportAction({
         const localizedTagListName = translateLocal('common.tag');
         const sortedTagKeys = getSortedTagKeys(policyTags);
 
-        sortedTagKeys.forEach((policyTagKey, index) => {
+        for (const [index, policyTagKey] of sortedTagKeys.entries()) {
             const policyTagListName = policyTags[policyTagKey].name || localizedTagListName;
 
             const newTag = splittedTag.at(index) ?? '';
@@ -312,7 +312,7 @@ function getForReportAction({
                     policyTagListName === localizedTagListName,
                 );
             }
-        });
+        }
     }
 
     const hasModifiedTaxAmount = isReportActionOriginalMessageAnObject && 'oldTaxAmount' in reportActionOriginalMessage && 'taxAmount' in reportActionOriginalMessage;
