@@ -7,6 +7,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
+    "hello": "echo hello",
     "i-standalone": "STANDALONE_NEW_DOT=true npm i",
     "install-standalone": "STANDALONE_NEW_DOT=true npm install",
     "configure-mapbox": "./scripts/setup-mapbox-sdk-walkthrough.sh",
